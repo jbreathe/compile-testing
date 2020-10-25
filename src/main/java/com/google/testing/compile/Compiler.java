@@ -155,6 +155,7 @@ public abstract class Compiler {
     InMemoryJavaFileManager fileManager =
         new InMemoryJavaFileManager(
             javaCompiler().getStandardFileManager(diagnosticCollector, Locale.getDefault(), UTF_8));
+    fileManager.saveToSourcePath(files);
     classPath()
         .ifPresent(
             classPath -> {

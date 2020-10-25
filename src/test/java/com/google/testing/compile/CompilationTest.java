@@ -95,7 +95,47 @@ public class CompilationTest {
   private static Compiler compilerWithGenerator() {
     return javac().withProcessors(new GeneratingProcessor("test.generated"));
   }
-  
+
+  @Test
+  public void copySourceFileWithPackage() {
+    assertThat(compilerWithCopyingProcessor().compile(
+        JavaFileObjects.forSourceLines("test.SomeClass",
+            "package test;",
+            "class SomeClass {",
+            "  void copyMe() { System.out.println(\"You're good.\"); }",
+            "}"
+        )))
+        .generatedSourceFile("test.SomeClass_Copy")
+        .hasSourceEquivalentTo(
+            JavaFileObjects.forSourceLines("test.SomeClass_Copy",
+                "package test;",
+                "class SomeClass_Copy {",
+                "  void copyMe() { System.out.println(\"You're good.\"); }",
+                "}"
+            ));
+  }
+
+  @Test
+  public void copySourceFileWithoutPackage() {
+    assertThat(compilerWithCopyingProcessor().compile(
+        JavaFileObjects.forSourceLines("SomeClass",
+            "class SomeClass {",
+            "  void copyMe() { System.out.println(\"You're good.\"); }",
+            "}"
+        )))
+        .generatedSourceFile("SomeClass_Copy")
+        .hasSourceEquivalentTo(
+            JavaFileObjects.forSourceLines("SomeClass_Copy",
+                "class SomeClass_Copy {",
+                "  void copyMe() { System.out.println(\"You're good.\"); }",
+                "}"
+            ));
+  }
+
+  private static Compiler compilerWithCopyingProcessor() {
+    return javac().withProcessors(new CopyingProcessor());
+  }
+
   @Test
   public void generatedFiles_unsuccessfulCompilationThrows() {
     Compilation compilation =
